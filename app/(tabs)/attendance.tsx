@@ -9,6 +9,7 @@ import {
   Modal,
   FlatList,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { supabase } from "../../utils/supabaseClient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
@@ -317,15 +318,10 @@ export default function StatsScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [season, setSeason] = useState<string>("2025-26");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("Swim");
   const [athletes, setAthletes] = useState<Athlete[]>([]);
-  const [athleteGroupFilter, setAthleteGroupFilter] = useState<string>("all");
+  const [athleteGroupFilter, setAthleteGroupFilter] = useState<string>("ASS");
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-
-  // Dropdown modal states
-  const [seasonModalVisible, setSeasonModalVisible] = useState(false);
-  const [typeModalVisible, setTypeModalVisible] = useState(false);
-  const [groupModalVisible, setGroupModalVisible] = useState(false);
 
   // Dropdown data
   const seasonOptions = [
@@ -335,79 +331,16 @@ export default function StatsScreen() {
   ];
 
   const typeOptions = [
-    { label: "All", value: "all" },
     { label: "Swim", value: "Swim" },
     { label: "Gym", value: "Gym" },
   ];
 
   const groupOptions = [
-    { label: "All", value: "all" },
     { label: "ASS", value: "ASS" },
     { label: "EA", value: "EA" },
     { label: "EB", value: "EB" },
     { label: "PROP", value: "PROP" },
   ];
-
-  // Custom Dropdown Component
-  const CustomDropdownComponent: React.FC<{
-    title: string;
-    selectedValue: string;
-    options: { label: string; value: string }[];
-    onSelect: (value: string) => void;
-    visible: boolean;
-    onClose: () => void;
-  }> = ({ title, selectedValue, options, onSelect, visible, onClose }) => (
-    <DropdownModal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <DropdownOverlay>
-        <TouchableOpacity
-          style={{ flex: 1, width: "100%" }}
-          activeOpacity={1}
-          onPress={onClose}
-        >
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <TouchableOpacity activeOpacity={1}>
-              <DropdownMenu>
-                <DropdownHeader>
-                  <DropdownTitle>{title}</DropdownTitle>
-                </DropdownHeader>
-                <FlatList
-                  data={options}
-                  keyExtractor={(item) => item.value}
-                  renderItem={({ item, index }) => (
-                    <DropdownItem
-                      onPress={() => {
-                        onSelect(item.value);
-                        onClose();
-                      }}
-                      style={{
-                        borderBottomWidth: index === options.length - 1 ? 0 : 1,
-                      }}
-                    >
-                      <DropdownItemText>{item.label}</DropdownItemText>
-                      {selectedValue === item.value && (
-                        <Ionicons
-                          name="checkmark"
-                          size={20}
-                          color={colors.primary}
-                        />
-                      )}
-                    </DropdownItem>
-                  )}
-                />
-              </DropdownMenu>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </DropdownOverlay>
-    </DropdownModal>
-  );
 
   // Helper function to generate Supabase storage URL for athlete portraits
   const getPortraitUrl = (fincode: number | string): string | null => {
@@ -462,15 +395,12 @@ export default function StatsScreen() {
     // Clear image errors to allow retry
     clearAllImageErrors();
 
-    let typeParam = typeFilter === "all" ? null : typeFilter;
-    let groupParam = athleteGroupFilter === "all" ? null : athleteGroupFilter;
-
     try {
       // Call the get_attendance_stats_by_season function
       let query = supabase.rpc("get_attendance_stats_by_season", {
         season: season,
-        session_type: typeParam,
-        group_name: groupParam,
+        session_type: typeFilter,
+        group_name: athleteGroupFilter,
       });
 
       // Order by percent desc
@@ -494,101 +424,93 @@ export default function StatsScreen() {
     <Container style={{ backgroundColor: colors.lightGray }}>
       <CompactFilterContainer>
         <CompactFilterGrid>
-          <CompactFilterItem>
+          <CompactFilterItem style={{ flex: 1, width: '100%', marginRight: 0 }}>
             <CompactLabel>Season</CompactLabel>
-            <CustomDropdown onPress={() => setSeasonModalVisible(true)}>
-              <DropdownText>
-                {seasonOptions.find((opt) => opt.value === season)?.label ||
-                  season}
-              </DropdownText>
-              <Ionicons
-                name="chevron-down"
-                size={16}
-                color={colors.textSecondary}
-              />
-            </CustomDropdown>
+            <Picker
+              selectedValue={season}
+              onValueChange={(itemValue) => setSeason(itemValue)}
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 8,
+                color: "#333333",
+              }}
+              itemStyle={{
+                height: 44,
+                color: "#333333",
+              }}
+            >
+              {seasonOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: "#333333" }}
+                />
+              ))}
+            </Picker>
           </CompactFilterItem>
+        </CompactFilterGrid>
 
+        <CompactFilterGrid>
           <CompactFilterItem>
             <CompactLabel>Type</CompactLabel>
-            <CustomDropdown onPress={() => setTypeModalVisible(true)}>
-              <DropdownText>
-                {typeOptions.find((opt) => opt.value === typeFilter)?.label ||
-                  typeFilter}
-              </DropdownText>
-              <Ionicons
-                name="chevron-down"
-                size={16}
-                color={colors.textSecondary}
-              />
-            </CustomDropdown>
+            <Picker
+              selectedValue={typeFilter}
+              onValueChange={(itemValue) => setTypeFilter(itemValue)}
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 8,
+                color: "#333333",
+              }}
+              itemStyle={{
+                height: 44,
+                color: "#333333",
+              }}
+            >
+              {typeOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: "#333333" }}
+                />
+              ))}
+            </Picker>
           </CompactFilterItem>
 
           <CompactFilterItem style={{ marginRight: 0 }}>
             <CompactLabel>Group</CompactLabel>
-            <CustomDropdown onPress={() => setGroupModalVisible(true)}>
-              <DropdownText>
-                {groupOptions.find((opt) => opt.value === athleteGroupFilter)
-                  ?.label || athleteGroupFilter}
-              </DropdownText>
-              <Ionicons
-                name="chevron-down"
-                size={16}
-                color={colors.textSecondary}
-              />
-            </CustomDropdown>
+            <Picker
+              selectedValue={athleteGroupFilter}
+              onValueChange={(itemValue) => setAthleteGroupFilter(itemValue)}
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 8,
+                color: "#333333",
+              }}
+              itemStyle={{
+                height: 44,
+                color: "#333333",
+              }}
+            >
+              {groupOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: "#333333" }}
+                />
+              ))}
+            </Picker>
           </CompactFilterItem>
         </CompactFilterGrid>
 
-        <ButtonRow>
-          <FilterButton onPress={handleFilter} disabled={loading}>
-            <Ionicons name="filter" size={20} color="#fff" />
-            <ButtonText style={{ marginLeft: 8 }}>
-              {loading ? "Loading..." : "Filter"}
-            </ButtonText>
-          </FilterButton>
-
-          <SuccessButton
-            style={{
-              flex: 1,
-              opacity: athletes.length === 0 ? 0.5 : 1,
-            }}
-            onPress={exportToExcel}
-            disabled={loading || athletes.length === 0}
-          >
-            <Ionicons name="download" size={20} color="#fff" />
-            <ButtonText style={{ marginLeft: 8 }}>Export</ButtonText>
-          </SuccessButton>
+        <ButtonRow style={{ justifyContent: 'center' }}>
+          <TouchableOpacity onPress={handleFilter} disabled={loading}>
+            <Ionicons name="filter-outline" size={28} color={colors.info} />
+          </TouchableOpacity>
         </ButtonRow>
       </CompactFilterContainer>
-
-      {/* Custom Dropdown Modals */}
-      <CustomDropdownComponent
-        title="Select Season"
-        selectedValue={season}
-        options={seasonOptions}
-        onSelect={setSeason}
-        visible={seasonModalVisible}
-        onClose={() => setSeasonModalVisible(false)}
-      />
-
-      <CustomDropdownComponent
-        title="Select Type"
-        selectedValue={typeFilter}
-        options={typeOptions}
-        onSelect={setTypeFilter}
-        visible={typeModalVisible}
-        onClose={() => setTypeModalVisible(false)}
-      />
-
-      <CustomDropdownComponent
-        title="Select Group"
-        selectedValue={athleteGroupFilter}
-        options={groupOptions}
-        onSelect={setAthleteGroupFilter}
-        visible={groupModalVisible}
-        onClose={() => setGroupModalVisible(false)}
-      />
 
       {error && <ErrorText>Error: {error}</ErrorText>}
 
@@ -601,7 +523,7 @@ export default function StatsScreen() {
       ) : (
         <ScrollView>
           <Heading style={{ fontSize: 20, marginBottom: 15 }}>
-            Group: {athleteGroupFilter === "all" ? "All" : athleteGroupFilter}
+            Group: {athleteGroupFilter}
           </Heading>
 
           <TableContainer>

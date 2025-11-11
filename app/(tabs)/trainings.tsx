@@ -420,7 +420,7 @@ export default function TrainingsScreen() {
                   <TouchableOpacity
                     onPress={() => {
                       router.push({
-                        pathname: "/attendance",
+                        pathname: "/attendance_form",
                         params: {
                           sessionId: item.session_id,
                           sessionDate: item.date,
