@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "SwimTrack4",
-    "slug": "SwimTrack4",
+    "name": "DoloSwimApp",
+    "slug": "DoloSwimApp",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "swimtrack4",
+    "scheme": "doloswimapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dtara.SwimTrack4",
+      "bundleIdentifier": "com.dtara.DoloSwimApp",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -22,7 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.dtara.SwimTrack4"
+      "package": "com.dtara.DoloSwimApp"
     },
     "web": {
       "bundler": "metro",

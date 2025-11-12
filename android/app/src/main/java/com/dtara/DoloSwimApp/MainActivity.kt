@@ -1,4 +1,4 @@
-package com.dtara.SwimTrack4
+package com.dtara.DoloSwimApp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

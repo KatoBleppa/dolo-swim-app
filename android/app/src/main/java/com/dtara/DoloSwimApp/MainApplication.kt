@@ -1,4 +1,4 @@
-package com.dtara.SwimTrack4
+package com.dtara.DoloSwimApp
 
 import android.app.Application
 import android.content.res.Configuration
