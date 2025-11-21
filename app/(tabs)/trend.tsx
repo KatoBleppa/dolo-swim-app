@@ -264,6 +264,58 @@ const BoldText = styled.Text`
   color: ${colors.textPrimary};
 `;
 
+const FloatingFilterButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${colors.primary};
+  justify-content: center;
+  align-items: center;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 5px;
+  elevation: 8;
+  z-index: 100;
+`;
+
+const FilterModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const FilterModalContent = styled.View`
+  background-color: ${colors.white};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  max-height: 80%;
+`;
+
+const FilterModalHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${colors.lightGray};
+`;
+
+const FilterModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: ${colors.textPrimary};
+`;
+
+const FilterSection = styled.View`
+  margin-bottom: 20px;
+`;
+
 function getSeasonMonths(season: string) {
   const result: string[] = [];
   const [startYear, endYear] = season.split("-");
@@ -305,6 +357,7 @@ export default function TrendScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showChartModal, setShowChartModal] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Dropdown modal states
   const [seasonModalVisible, setSeasonModalVisible] = useState(false);
@@ -522,129 +575,6 @@ export default function TrendScreen() {
   return (
     <Container style={{ backgroundColor: colors.lightGray }}>
       <ScrollView style={{ padding: 20 }}>
-        <CompactFilterContainer>
-          <CompactFilterGrid>
-            {/* First Row: Season and Type */}
-            <FilterRow>
-              <CompactFilterItem>
-                <CompactLabel>Season</CompactLabel>
-                <CustomDropdown onPress={() => setSeasonModalVisible(true)}>
-                  <DropdownText>
-                    {seasonOptions.find((opt) => opt.value === season)?.label ||
-                      season}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-
-              <CompactFilterItem style={{ marginRight: 0 }}>
-                <CompactLabel>Type</CompactLabel>
-                <CustomDropdown onPress={() => setTypeModalVisible(true)}>
-                  <DropdownText>
-                    {typeOptions.find((opt) => opt.value === selectedType)
-                      ?.label || selectedType}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-            </FilterRow>
-
-            {/* Second Row: Group and Athlete */}
-            <FilterRow>
-              <CompactFilterItem>
-                <CompactLabel>Group</CompactLabel>
-                <CustomDropdown onPress={() => setGroupModalVisible(true)}>
-                  <DropdownText>
-                    {groupOptions.find((opt) => opt.value === selectedGroup)
-                      ?.label || selectedGroup}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-
-              <CompactFilterItem style={{ marginRight: 0 }}>
-                <CompactLabel>Athlete</CompactLabel>
-                <CustomDropdown onPress={() => setAthleteModalVisible(true)}>
-                  <DropdownText>
-                    {selectedFincode === "all"
-                      ? "Athlete..."
-                      : athletes.find((a) => a.fincode === selectedFincode)
-                          ?.name || "Unknown"}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-            </FilterRow>
-          </CompactFilterGrid>
-
-          <ButtonRow>
-            <ChartButton
-              style={{ opacity: selectedFincode === "all" ? 0.5 : 1 }}
-              onPress={openChartModal}
-              disabled={loading || selectedFincode === "all"}
-            >
-              <Ionicons name="analytics" size={20} color="#fff" />
-              <ButtonText style={{ marginLeft: 8 }}>View Chart</ButtonText>
-            </ChartButton>
-          </ButtonRow>
-        </CompactFilterContainer>
-
-        {/* Custom Dropdown Modals */}
-        <CustomDropdownComponent
-          title="Select Season"
-          selectedValue={season}
-          options={seasonOptions}
-          onSelect={setSeason}
-          visible={seasonModalVisible}
-          onClose={() => setSeasonModalVisible(false)}
-        />
-
-        <CustomDropdownComponent
-          title="Select Type"
-          selectedValue={selectedType}
-          options={typeOptions}
-          onSelect={(value: string) => setSelectedType(value as "Swim" | "Gym")}
-          visible={typeModalVisible}
-          onClose={() => setTypeModalVisible(false)}
-        />
-
-        <CustomDropdownComponent
-          title="Select Group"
-          selectedValue={selectedGroup}
-          options={groupOptions}
-          onSelect={(value: string) =>
-            setSelectedGroup(value as "all" | "ASS" | "EA" | "EB" | "PROP")
-          }
-          visible={groupModalVisible}
-          onClose={() => setGroupModalVisible(false)}
-        />
-
-        <CustomDropdownComponent
-          title="Select Athlete"
-          selectedValue={selectedFincode.toString()}
-          options={athleteOptions}
-          onSelect={(value: string) =>
-            setSelectedFincode(value === "all" ? "all" : Number(value))
-          }
-          visible={athleteModalVisible}
-          onClose={() => setAthleteModalVisible(false)}
-        />
 
         {error && <ErrorText>Error: {error}</ErrorText>}
 
@@ -892,6 +822,150 @@ export default function TrendScreen() {
           </>
         )}
       </ScrollView>
+
+      <FloatingFilterButton onPress={() => setFilterModalVisible(true)}>
+        <Ionicons name="filter" size={28} color={colors.white} />
+      </FloatingFilterButton>
+
+      <Modal
+        visible={filterModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <FilterModalOverlay>
+          <TouchableOpacity 
+            style={{ flex: 1 }} 
+            activeOpacity={1} 
+            onPress={() => setFilterModalVisible(false)}
+          />
+          <FilterModalContent>
+            <FilterModalHeader>
+              <FilterModalTitle>Filter Trend</FilterModalTitle>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                <Ionicons name="close" size={28} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </FilterModalHeader>
+
+            <ScrollView>
+              <FilterSection>
+                <CompactLabel>Season</CompactLabel>
+                <CustomDropdown onPress={() => setSeasonModalVisible(true)}>
+                  <DropdownText>
+                    {seasonOptions.find((opt) => opt.value === season)?.label ||
+                      season}
+                  </DropdownText>
+                  <Ionicons
+                    name="chevron-down"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </CustomDropdown>
+              </FilterSection>
+
+              <FilterSection>
+                <CompactLabel>Type</CompactLabel>
+                <CustomDropdown onPress={() => setTypeModalVisible(true)}>
+                  <DropdownText>
+                    {typeOptions.find((opt) => opt.value === selectedType)
+                      ?.label || selectedType}
+                  </DropdownText>
+                  <Ionicons
+                    name="chevron-down"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </CustomDropdown>
+              </FilterSection>
+
+              <FilterSection>
+                <CompactLabel>Group</CompactLabel>
+                <CustomDropdown onPress={() => setGroupModalVisible(true)}>
+                  <DropdownText>
+                    {groupOptions.find((opt) => opt.value === selectedGroup)
+                      ?.label || selectedGroup}
+                  </DropdownText>
+                  <Ionicons
+                    name="chevron-down"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </CustomDropdown>
+              </FilterSection>
+
+              <FilterSection>
+                <CompactLabel>Athlete</CompactLabel>
+                <CustomDropdown onPress={() => setAthleteModalVisible(true)}>
+                  <DropdownText>
+                    {selectedFincode === "all"
+                      ? "Athlete..."
+                      : athletes.find((a) => a.fincode === selectedFincode)
+                          ?.name || "Unknown"}
+                  </DropdownText>
+                  <Ionicons
+                    name="chevron-down"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                </CustomDropdown>
+              </FilterSection>
+
+              <ChartButton
+                style={{ opacity: selectedFincode === "all" ? 0.5 : 1, marginTop: 10 }}
+                onPress={() => {
+                  setFilterModalVisible(false);
+                  openChartModal();
+                }}
+                disabled={loading || selectedFincode === "all"}
+              >
+                <Ionicons name="analytics" size={20} color="#fff" />
+                <ButtonText style={{ marginLeft: 8 }}>View Chart</ButtonText>
+              </ChartButton>
+            </ScrollView>
+          </FilterModalContent>
+        </FilterModalOverlay>
+      </Modal>
+
+      {/* Custom Dropdown Modals */}
+      <CustomDropdownComponent
+        title="Select Season"
+        selectedValue={season}
+        options={seasonOptions}
+        onSelect={setSeason}
+        visible={seasonModalVisible}
+        onClose={() => setSeasonModalVisible(false)}
+      />
+
+      <CustomDropdownComponent
+        title="Select Type"
+        selectedValue={selectedType}
+        options={typeOptions}
+        onSelect={(value: string) => setSelectedType(value as "Swim" | "Gym")}
+        visible={typeModalVisible}
+        onClose={() => setTypeModalVisible(false)}
+      />
+
+      <CustomDropdownComponent
+        title="Select Group"
+        selectedValue={selectedGroup}
+        options={groupOptions}
+        onSelect={(value: string) =>
+          setSelectedGroup(value as "all" | "ASS" | "EA" | "EB" | "PROP")
+        }
+        visible={groupModalVisible}
+        onClose={() => setGroupModalVisible(false)}
+      />
+
+      <CustomDropdownComponent
+        title="Select Athlete"
+        selectedValue={selectedFincode.toString()}
+        options={athleteOptions}
+        onSelect={(value: string) =>
+          setSelectedFincode(value === "all" ? "all" : Number(value))
+        }
+        visible={athleteModalVisible}
+        onClose={() => setAthleteModalVisible(false)}
+      />
     </Container>
   );
 }

@@ -6,12 +6,14 @@ import {
   Modal,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { format } from "date-fns";
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../utils/supabaseClient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import styled from "styled-components/native";
 import {
   Container,
   Title,
@@ -23,8 +25,6 @@ import {
   Portrait,
   Input,
   InputRow,
-  InputHalf,
-  InputThird,
   InputWide,
   InputNarrow,
   InputMedium,
@@ -65,6 +65,67 @@ interface Season {
   seasonend: string;
 }
 
+const FloatingFilterButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${colors.primary};
+  justify-content: center;
+  align-items: center;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 5px;
+  elevation: 8;
+  z-index: 100;
+`;
+
+const FilterModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const FilterModalContent = styled.View`
+  background-color: ${colors.white};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  max-height: 60%;
+`;
+
+const FilterModalHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${colors.lightGray};
+`;
+
+const FilterModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: ${colors.textPrimary};
+`;
+
+const FilterSection = styled.View`
+  margin-bottom: 20px;
+`;
+
+const FilterLabel = styled.Text`
+  font-size: 12px;
+  font-weight: 600;
+  color: ${colors.textSecondary};
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
 const AthletesScreen = () => {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [filteredAthletes, setFilteredAthletes] = useState<Athlete[]>([]);
@@ -77,6 +138,7 @@ const AthletesScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const groupOptions = [
     { label: "Select a group...", value: "" },
@@ -422,69 +484,6 @@ const AthletesScreen = () => {
 
   return (
     <Container>
-
-      {/* Dropdowns Row */}
-      <DropdownRow>
-        <DropdownContainer>
-          <Label>Season:</Label>
-          <Picker
-            selectedValue={selectedSeason}
-            onValueChange={(itemValue) => setSelectedSeason(itemValue)}
-            enabled={!seasonsLoading}
-            style={{
-              color: colors.textPrimary,
-              backgroundColor: colors.white,
-              height: 55,
-            }}
-            itemStyle={{
-              color: colors.textPrimary,
-              fontSize: 16,
-            }}
-          >
-            <Picker.Item 
-              label="Select a season..." 
-              value="" 
-              style={{ color: colors.textSecondary }}
-            />
-            {seasons.map((season) => (
-              <Picker.Item
-                key={season.seasonid}
-                label={season.description}
-                value={season.description}
-                style={{ color: colors.textPrimary }}
-              />
-            ))}
-          </Picker>
-        </DropdownContainer>
-
-        <DropdownContainer>
-          <Label>Group:</Label>
-          <Picker
-            selectedValue={selectedGroup}
-            onValueChange={(itemValue) => setSelectedGroup(itemValue)}
-            enabled={!!selectedSeason && !loading}
-            style={{
-              color: colors.textPrimary,
-              backgroundColor: colors.white,
-              height: 55,
-            }}
-            itemStyle={{
-              color: colors.textPrimary,
-              fontSize: 16,
-            }}
-          >
-            {groupOptions.map((option) => (
-              <Picker.Item
-                key={option.value}
-                label={option.label}
-                value={option.value}
-                style={{ color: colors.textPrimary }}
-              />
-            ))}
-          </Picker>
-        </DropdownContainer>
-      </DropdownRow>
-
       {/* Loading and Error States */}
       {seasonsLoading && <Text>Loading seasons...</Text>}
       {loading && selectedSeason && <Text>Loading athletes...</Text>}
@@ -681,6 +680,89 @@ const AthletesScreen = () => {
           )}
           </ModalContent>
         </View>
+      </Modal>
+
+      <FloatingFilterButton onPress={() => setFilterModalVisible(true)}>
+        <Ionicons name="filter" size={28} color={colors.white} />
+      </FloatingFilterButton>
+
+      <Modal
+        visible={filterModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <FilterModalOverlay>
+          <TouchableOpacity 
+            style={{ flex: 1 }} 
+            activeOpacity={1} 
+            onPress={() => setFilterModalVisible(false)}
+          />
+          <FilterModalContent>
+            <FilterModalHeader>
+              <FilterModalTitle>Filter Athletes</FilterModalTitle>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                <Ionicons name="close" size={28} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </FilterModalHeader>
+
+            <ScrollView>
+              <FilterSection>
+                <FilterLabel>Season</FilterLabel>
+                <Picker
+                  selectedValue={selectedSeason}
+                  onValueChange={(itemValue) => {
+                    setSelectedSeason(itemValue);
+                    setFilterModalVisible(false);
+                  }}
+                  enabled={!seasonsLoading}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    color: "#333333",
+                  }}
+                >
+                  <Picker.Item 
+                    label="Select a season..." 
+                    value="" 
+                  />
+                  {seasons.map((season) => (
+                    <Picker.Item
+                      key={season.seasonid}
+                      label={season.description}
+                      value={season.description}
+                    />
+                  ))}
+                </Picker>
+              </FilterSection>
+
+              <FilterSection>
+                <FilterLabel>Group</FilterLabel>
+                <Picker
+                  selectedValue={selectedGroup}
+                  onValueChange={(itemValue) => {
+                    setSelectedGroup(itemValue);
+                    setFilterModalVisible(false);
+                  }}
+                  enabled={!!selectedSeason && !loading}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    color: "#333333",
+                  }}
+                >
+                  {groupOptions.map((option) => (
+                    <Picker.Item
+                      key={option.value}
+                      label={option.label}
+                      value={option.value}
+                    />
+                  ))}
+                </Picker>
+              </FilterSection>
+            </ScrollView>
+          </FilterModalContent>
+        </FilterModalOverlay>
       </Modal>
     </Container>
   );

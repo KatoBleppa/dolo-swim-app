@@ -6,7 +6,7 @@ import styled from "styled-components/native";
 interface Meet {
   mindate: string;
   maxdate: string;
-  name: string;
+  meetname: string;
   place: string;
   course: number;
   groups: string[];
@@ -92,14 +92,10 @@ const ErrorText = styled.Text`
 export default function Index() {
   const [nextEvents, setNextEvents] = useState<Meet[]>([]);
   const [nextWorkouts, setNextWorkouts] = useState<Session[]>([]);
-  const [seasonSummaries, setSeasonSummaries] = useState<SeasonSummary[]>([]);
-  const [seasonFilter, setSeasonFilter] = useState<string>('ASS');
   const [loading, setLoading] = useState(true);
   const [workoutLoading, setWorkoutLoading] = useState(true);
-  const [seasonLoading, setSeasonLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [workoutError, setWorkoutError] = useState<string | null>(null);
-  const [seasonError, setSeasonError] = useState<string | null>(null);
 
   // Helper function to format date as dd.mm.yyyy
   const formatDate = (dateString: string): string => {
@@ -118,7 +114,7 @@ export default function Index() {
 
         const { data, error } = await supabase
           .from('meets_teammanager')
-          .select('mindate, maxdate, name, place, course, groups')
+          .select('mindate, maxdate, meetname, place, course, groups')
           .gte('mindate', today)
           .order('mindate', { ascending: true })
           .limit(2);
@@ -187,7 +183,7 @@ export default function Index() {
             >
               {nextEvents.map((event, index) => (
                 <CardContainer key={index}>
-                  <CardTitle>{event.name}</CardTitle>
+                  <CardTitle>{event.meetname}</CardTitle>
                   <CardText>📅 {formatDate(event.mindate)} - {formatDate(event.maxdate)}</CardText>
                   <CardText>📍 {event.place}</CardText>
                   <CardText>🏊 Course: {event.course === 1 ? '50m' : event.course === 2 ? '25m' : event.course}</CardText>

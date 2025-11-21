@@ -304,6 +304,72 @@ const PercentCell = styled.Text`
   text-align: center;
 `;
 
+const FloatingFilterButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${colors.primary};
+  justify-content: center;
+  align-items: center;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 5px;
+  elevation: 8;
+  z-index: 100;
+`;
+
+const FilterModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const FilterModalContent = styled.View`
+  background-color: ${colors.white};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  max-height: 80%;
+`;
+
+const ModalHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${colors.lightGray};
+`;
+
+const ModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: ${colors.textPrimary};
+`;
+
+const FilterSection = styled.View`
+  margin-bottom: 20px;
+`;
+
+const ApplyButton = styled.TouchableOpacity`
+  background-color: ${colors.primary};
+  padding: 15px;
+  border-radius: 8px;
+  align-items: center;
+  margin-top: 10px;
+`;
+
+const ApplyButtonText = styled.Text`
+  color: ${colors.white};
+  font-size: 16px;
+  font-weight: bold;
+`;
+
 interface Athlete {
   fincode: number;
   name: string;
@@ -322,6 +388,7 @@ export default function StatsScreen() {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [athleteGroupFilter, setAthleteGroupFilter] = useState<string>("ASS");
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Dropdown data
   const seasonOptions = [
@@ -390,6 +457,7 @@ export default function StatsScreen() {
 
   // Fetch attendance summary using the get_attendance_stats_by_season function
   const handleFilter = async () => {
+    setFilterModalVisible(false);
     setLoading(true);
     setError(null);
     // Clear image errors to allow retry
@@ -422,96 +490,6 @@ export default function StatsScreen() {
 
   return (
     <Container style={{ backgroundColor: colors.lightGray }}>
-      <CompactFilterContainer>
-        <CompactFilterGrid>
-          <CompactFilterItem style={{ flex: 1, width: '100%', marginRight: 0 }}>
-            <CompactLabel>Season</CompactLabel>
-            <Picker
-              selectedValue={season}
-              onValueChange={(itemValue) => setSeason(itemValue)}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 8,
-                color: "#333333",
-              }}
-              itemStyle={{
-                height: 44,
-                color: "#333333",
-              }}
-            >
-              {seasonOptions.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  style={{ color: "#333333" }}
-                />
-              ))}
-            </Picker>
-          </CompactFilterItem>
-        </CompactFilterGrid>
-
-        <CompactFilterGrid>
-          <CompactFilterItem>
-            <CompactLabel>Type</CompactLabel>
-            <Picker
-              selectedValue={typeFilter}
-              onValueChange={(itemValue) => setTypeFilter(itemValue)}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 8,
-                color: "#333333",
-              }}
-              itemStyle={{
-                height: 44,
-                color: "#333333",
-              }}
-            >
-              {typeOptions.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  style={{ color: "#333333" }}
-                />
-              ))}
-            </Picker>
-          </CompactFilterItem>
-
-          <CompactFilterItem style={{ marginRight: 0 }}>
-            <CompactLabel>Group</CompactLabel>
-            <Picker
-              selectedValue={athleteGroupFilter}
-              onValueChange={(itemValue) => setAthleteGroupFilter(itemValue)}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 8,
-                color: "#333333",
-              }}
-              itemStyle={{
-                height: 44,
-                color: "#333333",
-              }}
-            >
-              {groupOptions.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  style={{ color: "#333333" }}
-                />
-              ))}
-            </Picker>
-          </CompactFilterItem>
-        </CompactFilterGrid>
-
-        <ButtonRow style={{ justifyContent: 'center' }}>
-          <TouchableOpacity onPress={handleFilter} disabled={loading}>
-            <Ionicons name="filter-outline" size={28} color={colors.info} />
-          </TouchableOpacity>
-        </ButtonRow>
-      </CompactFilterContainer>
-
       {error && <ErrorText>Error: {error}</ErrorText>}
 
       {loading ? (
@@ -611,6 +589,104 @@ export default function StatsScreen() {
           )}
         </ScrollView>
       )}
+
+      <FloatingFilterButton onPress={() => setFilterModalVisible(true)}>
+        <Ionicons name="filter" size={28} color={colors.white} />
+      </FloatingFilterButton>
+
+      <Modal
+        visible={filterModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <FilterModalOverlay>
+          <TouchableOpacity 
+            style={{ flex: 1 }} 
+            activeOpacity={1} 
+            onPress={() => setFilterModalVisible(false)}
+          />
+          <FilterModalContent>
+            <ModalHeader>
+              <ModalTitle>Filter Attendance</ModalTitle>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                <Ionicons name="close" size={28} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </ModalHeader>
+
+            <ScrollView>
+              <FilterSection>
+                <CompactLabel>Season</CompactLabel>
+                <Picker
+                  selectedValue={season}
+                  onValueChange={(itemValue) => setSeason(itemValue)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    color: "#333333",
+                  }}
+                >
+                  {seasonOptions.map((option) => (
+                    <Picker.Item
+                      key={option.value}
+                      label={option.label}
+                      value={option.value}
+                    />
+                  ))}
+                </Picker>
+              </FilterSection>
+
+              <FilterSection>
+                <CompactLabel>Type</CompactLabel>
+                <Picker
+                  selectedValue={typeFilter}
+                  onValueChange={(itemValue) => setTypeFilter(itemValue)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    color: "#333333",
+                  }}
+                >
+                  {typeOptions.map((option) => (
+                    <Picker.Item
+                      key={option.value}
+                      label={option.label}
+                      value={option.value}
+                    />
+                  ))}
+                </Picker>
+              </FilterSection>
+
+              <FilterSection>
+                <CompactLabel>Group</CompactLabel>
+                <Picker
+                  selectedValue={athleteGroupFilter}
+                  onValueChange={(itemValue) => setAthleteGroupFilter(itemValue)}
+                  style={{
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    color: "#333333",
+                  }}
+                >
+                  {groupOptions.map((option) => (
+                    <Picker.Item
+                      key={option.value}
+                      label={option.label}
+                      value={option.value}
+                    />
+                  ))}
+                </Picker>
+              </FilterSection>
+
+              <ApplyButton onPress={handleFilter} disabled={loading}>
+                <ApplyButtonText>
+                  {loading ? "Loading..." : "Apply Filters"}
+                </ApplyButtonText>
+              </ApplyButton>
+            </ScrollView>
+          </FilterModalContent>
+        </FilterModalOverlay>
+      </Modal>
     </Container>
   );
 }
