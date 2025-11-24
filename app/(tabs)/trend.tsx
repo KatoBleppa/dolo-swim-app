@@ -10,6 +10,7 @@ import {
   Modal,
   FlatList,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { supabase } from "../../utils/supabaseClient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Svg, { Circle, Text as SvgText, Line, G } from "react-native-svg";
@@ -69,86 +70,6 @@ const CompactLabel = styled.Text`
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-`;
-
-const CustomDropdown = styled.TouchableOpacity`
-  background-color: ${colors.lightGray};
-  border-radius: 8px;
-  padding: 10px 12px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 36px;
-  border: 1px solid ${colors.border};
-`;
-
-const DropdownText = styled.Text`
-  font-size: 14px;
-  color: ${colors.textPrimary};
-  flex: 1;
-`;
-
-const DropdownModal = styled(Modal)``;
-
-const DropdownOverlay = styled.View`
-  flex: 1;
-  background-color: rgba(0, 0, 0, 0.5);
-  justify-content: center;
-  align-items: center;
-`;
-
-const DropdownMenu = styled.View`
-  background-color: ${colors.white};
-  border-radius: 12px;
-  min-width: 200px;
-  max-height: 400px;
-  shadow-color: #000;
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.2;
-  shadow-radius: 8px;
-  elevation: 8;
-`;
-
-const DropdownHeader = styled.View`
-  padding: 16px;
-  border-bottom: 1px solid ${colors.lightGray};
-`;
-
-const DropdownTitle = styled.Text`
-  font-size: 16px;
-  font-weight: bold;
-  color: ${colors.textPrimary};
-  text-align: center;
-`;
-
-const DropdownItem = styled.TouchableOpacity`
-  padding: 12px 16px;
-  border-bottom: 1px solid ${colors.lightGray};
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const DropdownItemText = styled.Text`
-  font-size: 14px;
-  color: ${colors.textPrimary};
-`;
-
-const ButtonRow = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 10px;
-`;
-
-const ChartButton = styled.TouchableOpacity`
-  background-color: ${colors.primary};
-  flex-direction: row;
-  align-items: center;
-  padding-vertical: 12px;
-  padding-horizontal: 20px;
-  border-radius: 8px;
-  flex: 1;
-  justify-content: center;
 `;
 
 const ErrorText = styled.Text`
@@ -305,12 +226,10 @@ export default function TrendScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showChartModal, setShowChartModal] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Dropdown modal states
-  const [seasonModalVisible, setSeasonModalVisible] = useState(false);
-  const [typeModalVisible, setTypeModalVisible] = useState(false);
-  const [groupModalVisible, setGroupModalVisible] = useState(false);
-  const [athleteModalVisible, setAthleteModalVisible] = useState(false);
+
 
   const months = getSeasonMonths(season);
 
@@ -343,67 +262,6 @@ export default function TrendScreen() {
         value: a.fincode.toString(),
       })),
   ];
-
-  // Custom Dropdown Component
-  const CustomDropdownComponent: React.FC<{
-    title: string;
-    selectedValue: string;
-    options: { label: string; value: string }[];
-    onSelect: (value: string) => void;
-    visible: boolean;
-    onClose: () => void;
-  }> = ({ title, selectedValue, options, onSelect, visible, onClose }) => (
-    <DropdownModal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <DropdownOverlay>
-        <TouchableOpacity
-          style={{ flex: 1, width: "100%" }}
-          activeOpacity={1}
-          onPress={onClose}
-        >
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <TouchableOpacity activeOpacity={1}>
-              <DropdownMenu>
-                <DropdownHeader>
-                  <DropdownTitle>{title}</DropdownTitle>
-                </DropdownHeader>
-                <FlatList
-                  data={options}
-                  keyExtractor={(item) => item.value}
-                  renderItem={({ item, index }) => (
-                    <DropdownItem
-                      onPress={() => {
-                        onSelect(item.value);
-                        onClose();
-                      }}
-                      style={{
-                        borderBottomWidth: index === options.length - 1 ? 0 : 1,
-                      }}
-                    >
-                      <DropdownItemText>{item.label}</DropdownItemText>
-                      {selectedValue === item.value && (
-                        <Ionicons
-                          name="checkmark"
-                          size={20}
-                          color={colors.primary}
-                        />
-                      )}
-                    </DropdownItem>
-                  )}
-                />
-              </DropdownMenu>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </DropdownOverlay>
-    </DropdownModal>
-  );
 
   useEffect(() => {
     const fetchAthletes = async () => {
@@ -466,24 +324,6 @@ export default function TrendScreen() {
     fetchAttendanceData();
   }, [selectedFincode, selectedType, season]);
 
-  // Export function placeholder for React Native
-  const exportToExcel = () => {
-    if (chartData.length === 0) {
-      Alert.alert(
-        "No Data",
-        "No data to export. Please select an athlete and run the trend analysis first."
-      );
-      return;
-    }
-
-    // In a real React Native app, you would use a library like react-native-fs
-    // or expo-file-system to export data
-    Alert.alert(
-      "Export",
-      "Export functionality would be implemented here using react-native-fs or similar library."
-    );
-  };
-
   // Function to open chart modal and set landscape orientation
   const openChartModal = async () => {
     try {
@@ -522,130 +362,6 @@ export default function TrendScreen() {
   return (
     <Container style={{ backgroundColor: colors.lightGray }}>
       <ScrollView style={{ padding: 20 }}>
-        <CompactFilterContainer>
-          <CompactFilterGrid>
-            {/* First Row: Season and Type */}
-            <FilterRow>
-              <CompactFilterItem>
-                <CompactLabel>Season</CompactLabel>
-                <CustomDropdown onPress={() => setSeasonModalVisible(true)}>
-                  <DropdownText>
-                    {seasonOptions.find((opt) => opt.value === season)?.label ||
-                      season}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-
-              <CompactFilterItem style={{ marginRight: 0 }}>
-                <CompactLabel>Type</CompactLabel>
-                <CustomDropdown onPress={() => setTypeModalVisible(true)}>
-                  <DropdownText>
-                    {typeOptions.find((opt) => opt.value === selectedType)
-                      ?.label || selectedType}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-            </FilterRow>
-
-            {/* Second Row: Group and Athlete */}
-            <FilterRow>
-              <CompactFilterItem>
-                <CompactLabel>Group</CompactLabel>
-                <CustomDropdown onPress={() => setGroupModalVisible(true)}>
-                  <DropdownText>
-                    {groupOptions.find((opt) => opt.value === selectedGroup)
-                      ?.label || selectedGroup}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-
-              <CompactFilterItem style={{ marginRight: 0 }}>
-                <CompactLabel>Athlete</CompactLabel>
-                <CustomDropdown onPress={() => setAthleteModalVisible(true)}>
-                  <DropdownText>
-                    {selectedFincode === "all"
-                      ? "Athlete..."
-                      : athletes.find((a) => a.fincode === selectedFincode)
-                          ?.name || "Unknown"}
-                  </DropdownText>
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                </CustomDropdown>
-              </CompactFilterItem>
-            </FilterRow>
-          </CompactFilterGrid>
-
-          <ButtonRow>
-            <ChartButton
-              style={{ opacity: selectedFincode === "all" ? 0.5 : 1 }}
-              onPress={openChartModal}
-              disabled={loading || selectedFincode === "all"}
-            >
-              <Ionicons name="analytics" size={20} color="#fff" />
-              <ButtonText style={{ marginLeft: 8 }}>View Chart</ButtonText>
-            </ChartButton>
-          </ButtonRow>
-        </CompactFilterContainer>
-
-        {/* Custom Dropdown Modals */}
-        <CustomDropdownComponent
-          title="Select Season"
-          selectedValue={season}
-          options={seasonOptions}
-          onSelect={setSeason}
-          visible={seasonModalVisible}
-          onClose={() => setSeasonModalVisible(false)}
-        />
-
-        <CustomDropdownComponent
-          title="Select Type"
-          selectedValue={selectedType}
-          options={typeOptions}
-          onSelect={(value: string) => setSelectedType(value as "Swim" | "Gym")}
-          visible={typeModalVisible}
-          onClose={() => setTypeModalVisible(false)}
-        />
-
-        <CustomDropdownComponent
-          title="Select Group"
-          selectedValue={selectedGroup}
-          options={groupOptions}
-          onSelect={(value: string) =>
-            setSelectedGroup(value as "all" | "ASS" | "EA" | "EB" | "PROP")
-          }
-          visible={groupModalVisible}
-          onClose={() => setGroupModalVisible(false)}
-        />
-
-        <CustomDropdownComponent
-          title="Select Athlete"
-          selectedValue={selectedFincode.toString()}
-          options={athleteOptions}
-          onSelect={(value: string) =>
-            setSelectedFincode(value === "all" ? "all" : Number(value))
-          }
-          visible={athleteModalVisible}
-          onClose={() => setAthleteModalVisible(false)}
-        />
-
         {error && <ErrorText>Error: {error}</ErrorText>}
 
         {loading ? (
@@ -892,6 +608,134 @@ export default function TrendScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Floating Filter Button */}
+      <TouchableOpacity
+        onPress={() => setFilterModalVisible(true)}
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: colors.primary,
+          justifyContent: 'center',
+          alignItems: 'center',
+          elevation: 5,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        }}
+      >
+        <Ionicons name="filter" size={28} color="white" />
+      </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={filterModalVisible}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+        transparent={true}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: colors.white, borderRadius: 12, padding: 20, width: '85%', maxWidth: 400 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary, marginBottom: 20, textAlign: 'center' }}>Filter Trend</Text>
+            
+            <CompactLabel>Season</CompactLabel>
+            <View style={{ borderWidth: 1, borderColor: colors.lightGray, borderRadius: 8, marginBottom: 15, backgroundColor: colors.white }}>
+              <Picker
+                selectedValue={season}
+                onValueChange={(value) => setSeason(value)}
+                style={{ height: 60 }}
+              >
+                {seasonOptions.map((option) => (
+                  <Picker.Item key={option.value} label={option.label} value={option.value} />
+                ))}
+              </Picker>
+            </View>
+
+            <CompactLabel>Type</CompactLabel>
+            <View style={{ borderWidth: 1, borderColor: colors.lightGray, borderRadius: 8, marginBottom: 15, backgroundColor: colors.white }}>
+              <Picker
+                selectedValue={selectedType}
+                onValueChange={(value) => setSelectedType(value as "Swim" | "Gym")}
+                style={{ height: 60 }}
+              >
+                {typeOptions.map((option) => (
+                  <Picker.Item key={option.value} label={option.label} value={option.value} />
+                ))}
+              </Picker>
+            </View>
+
+            <CompactLabel>Group</CompactLabel>
+            <View style={{ borderWidth: 1, borderColor: colors.lightGray, borderRadius: 8, marginBottom: 15, backgroundColor: colors.white }}>
+              <Picker
+                selectedValue={selectedGroup}
+                onValueChange={(value) => setSelectedGroup(value as "all" | "ASS" | "EA" | "EB" | "PROP")}
+                style={{ height: 60 }}
+              >
+                {groupOptions.map((option) => (
+                  <Picker.Item key={option.value} label={option.label} value={option.value} />
+                ))}
+              </Picker>
+            </View>
+
+            <CompactLabel>Athlete</CompactLabel>
+            <View style={{ borderWidth: 1, borderColor: colors.lightGray, borderRadius: 8, marginBottom: 20, backgroundColor: colors.white }}>
+              <Picker
+                selectedValue={selectedFincode.toString()}
+                onValueChange={(value) => setSelectedFincode(value === "all" ? "all" : Number(value))}
+                style={{ height: 60 }}
+              >
+                {athleteOptions.map((option) => (
+                  <Picker.Item key={option.value} label={option.label} value={option.value} />
+                ))}
+              </Picker>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setFilterModalVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.white,
+                  padding: 15,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: colors.danger,
+                }}
+              >
+                <Ionicons name="close-circle" size={28} color={colors.danger} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setFilterModalVisible(false);
+                  if (selectedFincode !== "all") {
+                    openChartModal();
+                  }
+                }}
+                disabled={selectedFincode === "all"}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.white,
+                  padding: 15,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: selectedFincode === "all" ? colors.lightGray : colors.primary,
+                }}
+              >
+                <Ionicons name="analytics" size={28} color={selectedFincode === "all" ? colors.lightGray : colors.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Container>
   );
 }

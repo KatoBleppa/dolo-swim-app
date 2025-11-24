@@ -99,6 +99,17 @@ const ButtonContainer = styled.View`
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
+  gap: 10px;
+`;
+
+const IconButton = styled.TouchableOpacity`
+  flex: 1;
+  background-color: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  border-width: 2px;
 `;
 
 export default function TrainingsScreen() {
@@ -551,18 +562,18 @@ export default function TrainingsScreen() {
                 }
               />
               <ButtonContainer>
-                <TouchableOpacity
-                  onPress={saveSession}
-                  style={{ marginHorizontal: 8 }}
-                >
-                  <Ionicons name="save-outline" color={colors.success} size={24} />
-                </TouchableOpacity>
-                <TouchableOpacity
+                <IconButton
                   onPress={toggleModal}
-                  style={{ marginHorizontal: 8 }}
+                  style={{ borderColor: colors.danger }}
                 >
-                  <Ionicons name="close-circle-outline" color={colors.info} size={26} />
-                </TouchableOpacity>
+                  <Ionicons name="close-circle" color={colors.danger} size={28} />
+                </IconButton>
+                <IconButton
+                  onPress={saveSession}
+                  style={{ borderColor: colors.success }}
+                >
+                  <Ionicons name="checkmark-circle" color={colors.success} size={28} />
+                </IconButton>
               </ButtonContainer>
             </ScrollView>
           </ModalContent>

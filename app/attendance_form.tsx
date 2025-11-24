@@ -274,6 +274,22 @@ const AttendanceScreen = () => {
       />
       <BottomButtonsContainer>
         <TouchableOpacity
+          onPress={() => router.push("/(tabs)/trainings")}
+          style={{
+            flex: 1,
+            backgroundColor: colors.white,
+            padding: 15,
+            borderRadius: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 2,
+            borderColor: colors.danger,
+            marginHorizontal: 5,
+          }}
+        >
+          <Ionicons name="close-circle" color={colors.danger} size={28} />
+        </TouchableOpacity>
+        <TouchableOpacity
           onPress={async () => {
             try {
               // Fetch current records for this session
@@ -337,22 +353,19 @@ const AttendanceScreen = () => {
               console.error("Failed to save attendance:", err);
             }
           }}
-          style={{ marginHorizontal: 8 }}
-                >
-          <Ionicons
-            name="save-outline"
-            color={colors.success}
-            size={24}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)/trainings")}
+          style={{
+            flex: 1,
+            backgroundColor: colors.white,
+            padding: 15,
+            borderRadius: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 2,
+            borderColor: colors.success,
+            marginHorizontal: 5,
+          }}
         >
-        <Ionicons
-          name="close-circle-outline"
-          color={colors.info}
-          size={26}
-        />
+          <Ionicons name="checkmark-circle" color={colors.success} size={28} />
         </TouchableOpacity>
       </BottomButtonsContainer>
     </Container>

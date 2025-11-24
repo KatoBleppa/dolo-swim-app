@@ -322,6 +322,7 @@ export default function StatsScreen() {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [athleteGroupFilter, setAthleteGroupFilter] = useState<string>("ASS");
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Dropdown data
   const seasonOptions = [
@@ -422,96 +423,6 @@ export default function StatsScreen() {
 
   return (
     <Container style={{ backgroundColor: colors.lightGray }}>
-      <CompactFilterContainer>
-        <CompactFilterGrid>
-          <CompactFilterItem style={{ flex: 1, width: '100%', marginRight: 0 }}>
-            <CompactLabel>Season</CompactLabel>
-            <Picker
-              selectedValue={season}
-              onValueChange={(itemValue) => setSeason(itemValue)}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 8,
-                color: "#333333",
-              }}
-              itemStyle={{
-                height: 44,
-                color: "#333333",
-              }}
-            >
-              {seasonOptions.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  style={{ color: "#333333" }}
-                />
-              ))}
-            </Picker>
-          </CompactFilterItem>
-        </CompactFilterGrid>
-
-        <CompactFilterGrid>
-          <CompactFilterItem>
-            <CompactLabel>Type</CompactLabel>
-            <Picker
-              selectedValue={typeFilter}
-              onValueChange={(itemValue) => setTypeFilter(itemValue)}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 8,
-                color: "#333333",
-              }}
-              itemStyle={{
-                height: 44,
-                color: "#333333",
-              }}
-            >
-              {typeOptions.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  style={{ color: "#333333" }}
-                />
-              ))}
-            </Picker>
-          </CompactFilterItem>
-
-          <CompactFilterItem style={{ marginRight: 0 }}>
-            <CompactLabel>Group</CompactLabel>
-            <Picker
-              selectedValue={athleteGroupFilter}
-              onValueChange={(itemValue) => setAthleteGroupFilter(itemValue)}
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 8,
-                color: "#333333",
-              }}
-              itemStyle={{
-                height: 44,
-                color: "#333333",
-              }}
-            >
-              {groupOptions.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  style={{ color: "#333333" }}
-                />
-              ))}
-            </Picker>
-          </CompactFilterItem>
-        </CompactFilterGrid>
-
-        <ButtonRow style={{ justifyContent: 'center' }}>
-          <TouchableOpacity onPress={handleFilter} disabled={loading}>
-            <Ionicons name="filter-outline" size={28} color={colors.info} />
-          </TouchableOpacity>
-        </ButtonRow>
-      </CompactFilterContainer>
-
       {error && <ErrorText>Error: {error}</ErrorText>}
 
       {loading ? (
@@ -611,6 +522,142 @@ export default function StatsScreen() {
           )}
         </ScrollView>
       )}
+
+      {/* Floating Filter Button */}
+      <TouchableOpacity
+        onPress={() => setFilterModalVisible(true)}
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: colors.primary,
+          justifyContent: 'center',
+          alignItems: 'center',
+          elevation: 5,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        }}
+      >
+        <Ionicons name="filter" size={28} color="white" />
+      </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={filterModalVisible}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+        transparent={true}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: colors.white, borderRadius: 12, padding: 20, width: '85%', maxWidth: 400 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary, marginBottom: 20, textAlign: 'center' }}>Filter Attendance</Text>
+            
+            <CompactLabel>Season</CompactLabel>
+            <Picker
+              selectedValue={season}
+              onValueChange={(itemValue) => setSeason(itemValue)}
+              style={{
+                backgroundColor: colors.lightGray,
+                borderRadius: 8,
+                color: colors.textPrimary,
+                marginBottom: 15,
+              }}
+            >
+              {seasonOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: colors.textPrimary }}
+                />
+              ))}
+            </Picker>
+
+            <CompactLabel>Type</CompactLabel>
+            <Picker
+              selectedValue={typeFilter}
+              onValueChange={(itemValue) => setTypeFilter(itemValue)}
+              style={{
+                backgroundColor: colors.lightGray,
+                borderRadius: 8,
+                color: colors.textPrimary,
+                marginBottom: 15,
+              }}
+            >
+              {typeOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: colors.textPrimary }}
+                />
+              ))}
+            </Picker>
+
+            <CompactLabel>Group</CompactLabel>
+            <Picker
+              selectedValue={athleteGroupFilter}
+              onValueChange={(itemValue) => setAthleteGroupFilter(itemValue)}
+              style={{
+                backgroundColor: colors.lightGray,
+                borderRadius: 8,
+                color: colors.textPrimary,
+                marginBottom: 20,
+              }}
+            >
+              {groupOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: colors.textPrimary }}
+                />
+              ))}
+            </Picker>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setFilterModalVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.white,
+                  padding: 15,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: colors.danger,
+                }}
+              >
+                <Ionicons name="close-circle" size={28} color={colors.danger} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  handleFilter();
+                  setFilterModalVisible(false);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.white,
+                  padding: 15,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: colors.primary,
+                }}
+              >
+                <Ionicons name="checkmark-circle" size={28} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Container>
   );
 }

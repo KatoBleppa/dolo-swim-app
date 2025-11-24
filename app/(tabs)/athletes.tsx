@@ -14,7 +14,6 @@ import { supabase } from "../../utils/supabaseClient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   Container,
-  Title,
   DropdownRow,
   DropdownContainer,
   Label,
@@ -23,8 +22,6 @@ import {
   Portrait,
   Input,
   InputRow,
-  InputHalf,
-  InputThird,
   InputWide,
   InputNarrow,
   InputMedium,
@@ -34,13 +31,6 @@ import {
   ModalTitle,
   ModalButtons,
   NoSelectionText,
-  ActiveContainer,
-  ActiveLabel,
-  ActiveCheckbox,
-  Checkbox,
-  Checkmark,
-  PickerContainer,
-  PickerHalf,
   colors,
 } from "../../styles/globalStyles";
 
@@ -71,10 +61,13 @@ const AthletesScreen = () => {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<string>("");
   const [selectedGroup, setSelectedGroup] = useState<string>("");
+  const [tempSeason, setTempSeason] = useState<string>("");
+  const [tempGroup, setTempGroup] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [seasonsLoading, setSeasonsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
@@ -423,68 +416,6 @@ const AthletesScreen = () => {
   return (
     <Container>
 
-      {/* Dropdowns Row */}
-      <DropdownRow>
-        <DropdownContainer>
-          <Label>Season:</Label>
-          <Picker
-            selectedValue={selectedSeason}
-            onValueChange={(itemValue) => setSelectedSeason(itemValue)}
-            enabled={!seasonsLoading}
-            style={{
-              color: colors.textPrimary,
-              backgroundColor: colors.white,
-              height: 55,
-            }}
-            itemStyle={{
-              color: colors.textPrimary,
-              fontSize: 16,
-            }}
-          >
-            <Picker.Item 
-              label="Select a season..." 
-              value="" 
-              style={{ color: colors.textSecondary }}
-            />
-            {seasons.map((season) => (
-              <Picker.Item
-                key={season.seasonid}
-                label={season.description}
-                value={season.description}
-                style={{ color: colors.textPrimary }}
-              />
-            ))}
-          </Picker>
-        </DropdownContainer>
-
-        <DropdownContainer>
-          <Label>Group:</Label>
-          <Picker
-            selectedValue={selectedGroup}
-            onValueChange={(itemValue) => setSelectedGroup(itemValue)}
-            enabled={!!selectedSeason && !loading}
-            style={{
-              color: colors.textPrimary,
-              backgroundColor: colors.white,
-              height: 55,
-            }}
-            itemStyle={{
-              color: colors.textPrimary,
-              fontSize: 16,
-            }}
-          >
-            {groupOptions.map((option) => (
-              <Picker.Item
-                key={option.value}
-                label={option.label}
-                value={option.value}
-                style={{ color: colors.textPrimary }}
-              />
-            ))}
-          </Picker>
-        </DropdownContainer>
-      </DropdownRow>
-
       {/* Loading and Error States */}
       {seasonsLoading && <Text>Loading seasons...</Text>}
       {loading && selectedSeason && <Text>Loading athletes...</Text>}
@@ -547,6 +478,135 @@ const AthletesScreen = () => {
             No athletes found for the selected season and group combination.
           </NoSelectionText>
         )}
+
+      {/* Floating Filter Button */}
+      <TouchableOpacity
+        onPress={() => {
+          setTempSeason(selectedSeason);
+          setTempGroup(selectedGroup);
+          setFilterModalVisible(true);
+        }}
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: colors.primary,
+          justifyContent: 'center',
+          alignItems: 'center',
+          elevation: 5,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        }}
+      >
+        <Ionicons name="filter" size={28} color="white" />
+      </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={filterModalVisible}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+        transparent={true}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <ModalContent>
+            <ModalTitle>Filter Athletes</ModalTitle>
+            
+            <Label>Season:</Label>
+            <Picker
+              selectedValue={tempSeason}
+              onValueChange={(itemValue) => setTempSeason(itemValue)}
+              enabled={!seasonsLoading}
+              style={{
+                color: colors.textPrimary,
+                backgroundColor: colors.white,
+                height: 55,
+                marginBottom: 15,
+              }}
+            >
+              <Picker.Item 
+                label="Select a season..." 
+                value="" 
+                style={{ color: colors.textSecondary }}
+              />
+              {seasons.map((season) => (
+                <Picker.Item
+                  key={season.seasonid}
+                  label={season.description}
+                  value={season.description}
+                  style={{ color: colors.textPrimary }}
+                />
+              ))}
+            </Picker>
+
+            <Label>Group:</Label>
+            <Picker
+              selectedValue={tempGroup}
+              onValueChange={(itemValue) => setTempGroup(itemValue)}
+              enabled={!!tempSeason && !loading}
+              style={{
+                color: colors.textPrimary,
+                backgroundColor: colors.white,
+                height: 55,
+                marginBottom: 20,
+              }}
+            >
+              {groupOptions.map((option) => (
+                <Picker.Item
+                  key={option.value}
+                  label={option.label}
+                  value={option.value}
+                  style={{ color: colors.textPrimary }}
+                />
+              ))}
+            </Picker>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setFilterModalVisible(false)}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.white,
+                  padding: 15,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: colors.danger,
+                }}
+              >
+                <Ionicons name="close-circle" size={28} color={colors.danger} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedSeason(tempSeason);
+                  setSelectedGroup(tempGroup);
+                  setFilterModalVisible(false);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.white,
+                  padding: 15,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: colors.primary,
+                }}
+              >
+                <Ionicons name="checkmark-circle" size={28} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          </ModalContent>
+        </View>
+      </Modal>
+
+      {/* Athlete Details Modal */}
       <Modal
         visible={modalVisible}
         animationType="slide"
