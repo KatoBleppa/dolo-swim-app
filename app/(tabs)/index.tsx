@@ -92,14 +92,10 @@ const ErrorText = styled.Text`
 export default function Index() {
   const [nextEvents, setNextEvents] = useState<Meet[]>([]);
   const [nextWorkouts, setNextWorkouts] = useState<Session[]>([]);
-  const [seasonSummaries, setSeasonSummaries] = useState<SeasonSummary[]>([]);
-  const [seasonFilter, setSeasonFilter] = useState<string>('ASS');
   const [loading, setLoading] = useState(true);
   const [workoutLoading, setWorkoutLoading] = useState(true);
-  const [seasonLoading, setSeasonLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [workoutError, setWorkoutError] = useState<string | null>(null);
-  const [seasonError, setSeasonError] = useState<string | null>(null);
 
   // Helper function to format date as dd.mm.yyyy
   const formatDate = (dateString: string): string => {

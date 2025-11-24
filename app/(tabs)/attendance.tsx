@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  FlatList,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { supabase } from "../../utils/supabaseClient";
@@ -15,8 +14,6 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   Container,
   Heading,
-  SuccessButton,
-  ButtonText,
   colors,
 } from "../../styles/globalStyles";
 import styled from "styled-components/native";
@@ -304,6 +301,72 @@ const PercentCell = styled.Text`
   text-align: center;
 `;
 
+const FloatingFilterButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${colors.primary};
+  justify-content: center;
+  align-items: center;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 5px;
+  elevation: 8;
+  z-index: 100;
+`;
+
+const FilterModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: flex-end;
+`;
+
+const FilterModalContent = styled.View`
+  background-color: ${colors.white};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  max-height: 80%;
+`;
+
+const ModalHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${colors.lightGray};
+`;
+
+const ModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: ${colors.textPrimary};
+`;
+
+const FilterSection = styled.View`
+  margin-bottom: 20px;
+`;
+
+const ApplyButton = styled.TouchableOpacity`
+  background-color: ${colors.primary};
+  padding: 15px;
+  border-radius: 8px;
+  align-items: center;
+  margin-top: 10px;
+`;
+
+const ApplyButtonText = styled.Text`
+  color: ${colors.white};
+  font-size: 16px;
+  font-weight: bold;
+`;
+
 interface Athlete {
   fincode: number;
   name: string;
@@ -391,6 +454,7 @@ export default function StatsScreen() {
 
   // Fetch attendance summary using the get_attendance_stats_by_season function
   const handleFilter = async () => {
+    setFilterModalVisible(false);
     setLoading(true);
     setError(null);
     // Clear image errors to allow retry
